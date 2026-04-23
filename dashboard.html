@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – EduQuiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #eef2f7; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      background: #fff;
+      padding: 0 40px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #1a2340; text-decoration: none; }
+    .nav-brand svg { width: 28px; height: 28px; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .user-chip { font-size: 13px; color: #6b7280; }
+    .btn-logout {
+      background: none; border: 1.5px solid #2563eb; color: #2563eb;
+      padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s;
+    }
+    .btn-logout:hover { background: #2563eb; color: #fff; }
+
+    /* MAIN */
+    main { max-width: 780px; margin: 40px auto; padding: 0 20px; }
+    .welcome { font-size: 22px; font-weight: 700; color: #1a2340; margin-bottom: 4px; }
+    .welcome-sub { font-size: 14px; color: #6b7280; margin-bottom: 28px; }
+
+    /* STATS ROW */
+    .stats-row { display: flex; gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: #fff; border-radius: 14px; padding: 22px 28px;
+      flex: 1; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .stat-label { font-size: 12px; font-weight: 600; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #2563eb; }
+    .stat-desc { font-size: 13px; color: #6b7280; }
+
+    /* QUIZ CARD */
+    .section-title { font-size: 15px; font-weight: 700; color: #1a2340; margin-bottom: 14px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .quiz-card {
+      background: #fff; border-radius: 14px; padding: 24px 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; transition: box-shadow 0.2s;
+    }
+    .quiz-card:hover { box-shadow: 0 6px 24px rgba(37,99,235,0.12); }
+    .quiz-info { display: flex; flex-direction: column; gap: 4px; }
+    .quiz-title { font-size: 16px; font-weight: 700; color: #1a2340; }
+    .quiz-meta { font-size: 13px; color: #6b7280; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: 8px;
+    }
+    .badge-math { background: #dbeafe; color: #2563eb; }
+    .badge-sci { background: #d1fae5; color: #059669; }
+    .badge-hist { background: #fef3c7; color: #d97706; }
+
+    .btn-start {
+      background: #2563eb; color: #fff; border: none;
+      padding: 10px 22px; border-radius: 8px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+      transition: background 0.15s, transform 0.1s; white-space: nowrap;
+    }
+    .btn-start:hover { background: #1d4ed8; }
+    .btn-start:active { transform: scale(0.97); }
+
+    footer { text-align: center; font-size: 12px; color: #9ca3af; margin: 40px 0 20px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="dashboard.html">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="14" cy="11" r="7" stroke="#2563eb" stroke-width="2"/>
+        <text x="11" y="15" font-size="9" fill="#2563eb" font-weight="bold">?</text>
+        <path d="M10 21h8M11 24h6" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      EduQuiz
+    </a>
+    <div class="nav-right">
+      <span class="user-chip" id="user-chip">Welcome, user</span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="welcome" id="welcome-name">Hello! 👋</div>
+    <div class="welcome-sub">Ready to test your knowledge today?</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Quizzes Taken</div>
+        <div class="stat-value" id="quizzes-taken">0</div>
+        <div class="stat-desc">Total attempts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last Score</div>
+        <div class="stat-value" id="last-score">–</div>
+        <div class="stat-desc">Most recent quiz</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Best Result</div>
+        <div class="stat-value" id="best-result">–</div>
+        <div class="stat-desc">Highest percentage</div>
+      </div>
+    </div>
+
+    <div class="section-title">Available Quizzes</div>
+
+    <div class="quiz-card">
+      <div class="quiz-info">
+        <div class="quiz-title">Fundamentals of Mathematics <span class="badge badge-math">Math</span></div>
+        <div class="quiz-meta">5 Questions &nbsp;·&nbsp; 15 Points &nbsp;·&nbsp; ~10 min</div>
+      </div>
+      <button class="btn-start" onclick="startQuiz('math')">Start Quiz</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-info">
+        <div class="quiz-title">Basic Sciences <span class="badge badge-sci">Science</span></div>
+        <div class="quiz-meta">5 Questions &nbsp;·&nbsp; 15 Points &nbsp;·&nbsp; ~10 min</div>
+      </div>
+      <button class="btn-start" onclick="startQuiz('science')">Start Quiz</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-info">
+        <div class="quiz-title">World History Essentials <span class="badge badge-hist">History</span></div>
+        <div class="quiz-meta">5 Questions &nbsp;·&nbsp; 15 Points &nbsp;·&nbsp; ~10 min</div>
+      </div>
+      <button class="btn-start" onclick="startQuiz('history')">Start Quiz</button>
+    </div>
+  </main>
+
+  <footer>© 2024 EduQuiz Inc. | All rights reserved</footer>
+
+  <script>
+    // Guard
+    const user = sessionStorage.getItem('eduquiz_user');
+    if (!user) window.location.href = 'login.html';
+
+    document.getElementById('user-chip').textContent = 'Welcome, ' + user.split('@')[0];
+    document.getElementById('welcome-name').textContent = 'Hello, ' + user.split('@')[0] + '! 👋';
+
+    // Load stats
+    const results = JSON.parse(sessionStorage.getItem('eduquiz_results') || '[]');
+    if (results.length) {
+      document.getElementById('quizzes-taken').textContent = results.length;
+      const last = results[results.length - 1];
+      document.getElementById('last-score').textContent = last.score + '/' + last.total;
+      const best = results.reduce((a, b) => (b.pct > a.pct ? b : a));
+      document.getElementById('best-result').textContent = best.pct + '%';
+    }
+
+    function startQuiz(topic) {
+      sessionStorage.setItem('eduquiz_topic', topic);
+      window.location.href = 'quiz.html';
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

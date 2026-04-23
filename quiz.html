@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz – EduQuiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #eef2f7; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 16px 20px; }
+
+    .icon-wrap {
+      width: 60px; height: 60px; background: #e8f0fe; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+    }
+
+    .card {
+      background: #fff; border-radius: 16px;
+      padding: 36px 40px 32px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    }
+
+    .quiz-title { font-size: 20px; font-weight: 700; color: #1a2340; text-align: center; margin-bottom: 18px; }
+
+    .progress-label { font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+    .progress-bar-bg { background: #e5e7eb; border-radius: 8px; height: 7px; margin-bottom: 24px; }
+    .progress-bar-fill { background: #2563eb; height: 7px; border-radius: 8px; transition: width 0.4s ease; }
+
+    .question-num { font-size: 13px; font-weight: 700; color: #2563eb; margin-bottom: 6px; }
+    .question-text { font-size: 16px; font-weight: 600; color: #1a2340; margin-bottom: 20px; line-height: 1.5; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .option-btn {
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid #d1d5db; border-radius: 10px;
+      padding: 13px 14px; cursor: pointer; background: #fff;
+      font-family: inherit; font-size: 14px; color: #1a2340;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: left;
+    }
+    .option-btn:hover { border-color: #93c5fd; background: #eff6ff; }
+    .option-btn.selected { border-color: #2563eb; background: #fff; }
+    .option-btn.selected .opt-letter { border-color: #2563eb; }
+
+    .opt-letter {
+      min-width: 26px; height: 26px; border-radius: 50%;
+      border: 1.5px solid #d1d5db; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #6b7280;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .option-btn.selected .opt-letter { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+    /* radio dot */
+    .opt-radio {
+      width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #d1d5db;
+      margin-left: auto; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .option-btn.selected .opt-radio { border-color: #2563eb; }
+    .opt-radio-dot { width: 9px; height: 9px; border-radius: 50%; background: #2563eb; display: none; }
+    .option-btn.selected .opt-radio-dot { display: block; }
+
+    .btn-submit {
+      width: 100%; padding: 14px; background: #2563eb; color: #fff;
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+      transition: background 0.15s, transform 0.1s; margin-bottom: 14px;
+    }
+    .btn-submit:hover { background: #1d4ed8; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    .nav-row { display: flex; justify-content: space-between; }
+    .btn-nav {
+      background: none; border: none; font-family: inherit;
+      font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px 0;
+      transition: opacity 0.15s;
+    }
+    .btn-nav.prev { color: #2563eb; }
+    .btn-nav.next { color: #6b7280; }
+    .btn-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    footer { margin-top: 32px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="icon-wrap">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="4" width="22" height="26" rx="4" stroke="#2563eb" stroke-width="2" fill="#dbeafe"/>
+      <line x1="11" y1="12" x2="23" y2="12" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="11" y1="17" x2="23" y2="17" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="11" y1="22" x2="18" y2="22" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="25" cy="23" r="5" fill="#2563eb"/>
+      <text x="23" y="27" font-size="8" fill="#fff" font-weight="bold">✓</text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="quiz-title" id="quiz-title">QUIZ: Fundamentals of Mathematics</div>
+    <div class="progress-label" id="progress-label">Question 1/5</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:20%"></div></div>
+    <div class="question-num" id="q-num">1.</div>
+    <div class="question-text" id="q-text">Loading...</div>
+    <div class="options-grid" id="options-grid"></div>
+    <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">Submit</button>
+    <div class="nav-row">
+      <button class="btn-nav prev" id="btn-prev" onclick="prevQ()" disabled>Previous Question</button>
+      <button class="btn-nav next" id="btn-next" onclick="nextQ()" disabled>Next Question</button>
+    </div>
+  </div>
+
+  <footer>© 2024 EduQuiz Inc. | All rights reserved</footer>
+
+  <script>
+    // Guard
+    if (!sessionStorage.getItem('eduquiz_user')) window.location.href = 'login.html';
+
+    const QUESTIONS = {
+      math: {
+        title: 'Fundamentals of Mathematics',
+        total: 15,
+        questions: [
+          { q: 'What is the derivative of x²?', opts: ['2x','x','x²/2','x·ln(x)'], ans: 0 },
+          { q: 'Simplify 3(x + 2).', opts: ['3x + 2','x + 6','3x + 5','3x + 6'], ans: 3 },
+          { q: 'Calculate the area of a rectangle with length 8 and width 6.', opts: ['48','14','36','42'], ans: 0 },
+          { q: 'What is the value of √144?', opts: ['11','12','13','14'], ans: 1 },
+          { q: 'Solve for x: 2x + 5 = 15.', opts: ['x = 3','x = 4','x = 5','x = 6'], ans: 2 },
+        ]
+      },
+      science: {
+        title: 'Basic Sciences',
+        total: 15,
+        questions: [
+          { q: 'What is the chemical symbol for water?', opts: ['O₂','H₂O','CO₂','HO'], ans: 1 },
+          { q: 'Which planet is closest to the Sun?', opts: ['Venus','Earth','Mars','Mercury'], ans: 3 },
+          { q: 'What force keeps planets in orbit?', opts: ['Magnetism','Friction','Gravity','Tension'], ans: 2 },
+          { q: 'What is the powerhouse of the cell?', opts: ['Nucleus','Ribosome','Mitochondria','Lysosome'], ans: 2 },
+          { q: 'At what temperature does water boil at sea level (°C)?', opts: ['90','95','100','105'], ans: 2 },
+        ]
+      },
+      history: {
+        title: 'World History Essentials',
+        total: 15,
+        questions: [
+          { q: 'In what year did World War II end?', opts: ['1943','1944','1945','1946'], ans: 2 },
+          { q: 'Who was the first President of the United States?', opts: ['Abraham Lincoln','Thomas Jefferson','George Washington','John Adams'], ans: 2 },
+          { q: 'Which ancient wonder was located in Alexandria?', opts: ['The Colosseum','The Lighthouse','The Great Wall','The Pyramids'], ans: 1 },
+          { q: 'The French Revolution began in which year?', opts: ['1776','1789','1804','1815'], ans: 1 },
+          { q: 'What empire built the Colosseum?', opts: ['Greek','Ottoman','Roman','Byzantine'], ans: 2 },
+        ]
+      }
+    };
+
+    const topic = sessionStorage.getItem('eduquiz_topic') || 'math';
+    const bank = QUESTIONS[topic] || QUESTIONS.math;
+    const qs = bank.questions;
+    const selected = new Array(qs.length).fill(null);
+    const submitted = new Array(qs.length).fill(false);
+    let current = 0;
+
+    document.getElementById('quiz-title').textContent = 'QUIZ: ' + bank.title;
+
+    function render() {
+      const q = qs[current];
+      const n = current + 1;
+      document.getElementById('progress-label').textContent = `Question ${n}/${qs.length}`;
+      document.getElementById('progress-fill').style.width = (n / qs.length * 100) + '%';
+      document.getElementById('q-num').textContent = n + '.';
+      document.getElementById('q-text').textContent = q.q;
+
+      const grid = document.getElementById('options-grid');
+      const letters = ['A','B','C','D'];
+      grid.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn' + (selected[current] === i ? ' selected' : '');
+        btn.innerHTML = `
+          <span class="opt-letter">${letters[i]}</span>
+          <span style="flex:1">${opt}</span>
+          <span class="opt-radio"><span class="opt-radio-dot"></span></span>
+        `;
+        btn.onclick = () => selectOpt(i);
+        grid.appendChild(btn);
+      });
+
+      document.getElementById('btn-prev').disabled = current === 0;
+      document.getElementById('btn-next').disabled = !submitted[current] || current === qs.length - 1;
+      const subBtn = document.getElementById('btn-submit');
+      if (submitted[current]) {
+        subBtn.textContent = current === qs.length - 1 ? 'View Results' : 'Submitted ✓';
+        subBtn.disabled = current !== qs.length - 1;
+        if (current === qs.length - 1) { subBtn.disabled = false; subBtn.textContent = 'View Results'; subBtn.onclick = viewResults; }
+      } else {
+        subBtn.textContent = 'Submit';
+        subBtn.disabled = selected[current] === null;
+        subBtn.onclick = submitAnswer;
+      }
+    }
+
+    function selectOpt(i) {
+      if (submitted[current]) return;
+      selected[current] = i;
+      render();
+    }
+
+    function submitAnswer() {
+      if (selected[current] === null) return;
+      submitted[current] = true;
+      if (current < qs.length - 1) {
+        render();
+      } else {
+        viewResults();
+      }
+    }
+
+    function viewResults() {
+      // Calculate score
+      let score = 0;
+      qs.forEach((q, i) => { if (selected[i] === q.ans) score += (bank.total / qs.length); });
+      score = Math.round(score);
+      const pct = Math.round((score / bank.total) * 100);
+      const summary = qs.map((q, i) => ({
+        q: q.q, selected: selected[i] !== null ? q.opts[selected[i]] : 'No answer',
+        correct: q.opts[q.ans], isCorrect: selected[i] === q.ans
+      }));
+      const resultObj = { topic: bank.title, score, total: bank.total, pct, summary };
+      sessionStorage.setItem('eduquiz_result', JSON.stringify(resultObj));
+      // Append to history
+      const results = JSON.parse(sessionStorage.getItem('eduquiz_results') || '[]');
+      results.push(resultObj);
+      sessionStorage.setItem('eduquiz_results', JSON.stringify(results));
+      window.location.href = 'result.html';
+    }
+
+    function prevQ() { if (current > 0) { current--; render(); } }
+    function nextQ() { if (submitted[current] && current < qs.length - 1) { current++; render(); } }
+
+    render();
+  </script>
+</body>
+</html>

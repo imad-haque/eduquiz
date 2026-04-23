@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Result – EduQuiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif; background: #eef2f7;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; padding: 36px 16px 24px;
+    }
+
+    .card {
+      background: #fff; border-radius: 16px; padding: 36px 40px 32px;
+      width: 100%; max-width: 520px; box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    }
+
+    .result-title { font-size: 20px; font-weight: 700; color: #1a2340; text-align: center; margin-bottom: 24px; }
+
+    /* Score ring */
+    .score-ring-wrap { display: flex; justify-content: center; margin-bottom: 12px; }
+    .score-ring { position: relative; width: 110px; height: 110px; }
+    .score-ring svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: #e5e7eb; stroke-width: 8; }
+    .ring-fill { fill: none; stroke: #2563eb; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+    .score-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .score-num { font-size: 22px; font-weight: 700; color: #1a2340; line-height: 1; }
+    .score-label { font-size: 10px; font-weight: 600; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; }
+
+    .pct-text { text-align: center; font-size: 15px; color: #6b7280; margin-bottom: 18px; }
+    .pct-text span { font-weight: 700; color: #1a2340; }
+
+    .pass-fail {
+      background: #f0fdf4; border-radius: 12px; padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .pass-fail.fail { background: #fef2f2; }
+
+    .pf-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .pf-icon.pass { background: #2563eb; }
+    .pf-icon.fail { background: #dc2626; }
+    .pf-icon svg { width: 16px; height: 16px; }
+
+    .pf-text { display: flex; flex-direction: column; }
+    .pf-status { font-size: 18px; font-weight: 700; }
+    .pf-status.pass { color: #1a2340; }
+    .pf-status.fail { color: #dc2626; }
+    .pf-sub { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+    /* Summary */
+    .summary-title {
+      font-size: 12px; font-weight: 700; color: #9ca3af; letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .summary-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+    .summary-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .summary-item:last-child { border-bottom: none; }
+
+    .s-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .s-icon.correct { background: #2563eb; }
+    .s-icon.wrong { background: #fee2e2; }
+    .s-icon svg { width: 12px; height: 12px; }
+
+    .s-body { flex: 1; }
+    .s-q { font-size: 13px; font-weight: 600; color: #1a2340; }
+    .s-detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .s-detail span { font-weight: 600; }
+
+    .btn-row { display: flex; gap: 12px; }
+    .btn-retry {
+      flex: 1; padding: 13px; border: 1.5px solid #2563eb; background: #fff;
+      color: #2563eb; border-radius: 8px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-retry:hover { background: #eff6ff; }
+    .btn-dash {
+      flex: 1; padding: 13px; background: #2563eb; color: #fff;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+      transition: background 0.15s;
+    }
+    .btn-dash:hover { background: #1d4ed8; }
+
+    footer { margin-top: 28px; font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="result-title" id="result-title">RESULT: Fundamentals of Mathematics</div>
+
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 110 110" width="110" height="110">
+          <circle class="ring-bg" cx="55" cy="55" r="46"/>
+          <circle class="ring-fill" id="ring-fill" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/>
+        </svg>
+        <div class="score-inner">
+          <div class="score-num" id="score-num">0/0</div>
+          <div class="score-label">SCORE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pct-text">Percentage: <span id="pct-text">0%</span></div>
+
+    <div class="pass-fail" id="pass-fail-box">
+      <div class="pf-icon pass" id="pf-icon">
+        <svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="2,8 6,12 14,4"/>
+        </svg>
+      </div>
+      <div class="pf-text">
+        <div class="pf-status pass" id="pf-status">PASS</div>
+        <div class="pf-sub" id="pf-sub">CONGRATULATIONS!</div>
+      </div>
+    </div>
+
+    <div class="summary-title">Summary of Correct/Incorrect Answers</div>
+    <div class="summary-list" id="summary-list"></div>
+
+    <div class="btn-row">
+      <button class="btn-retry" onclick="retryQuiz()">RETRY QUIZ</button>
+      <button class="btn-dash" onclick="window.location.href='dashboard.html'">GO TO DASHBOARD</button>
+    </div>
+  </div>
+
+  <footer>© 2024 EduQuiz Inc. | All rights reserved</footer>
+
+  <script>
+    if (!sessionStorage.getItem('eduquiz_user')) window.location.href = 'login.html';
+
+    const result = JSON.parse(sessionStorage.getItem('eduquiz_result') || 'null');
+    if (!result) { window.location.href = 'dashboard.html'; }
+
+    document.getElementById('result-title').textContent = 'RESULT: ' + result.topic;
+    document.getElementById('score-num').textContent = result.score + '/' + result.total;
+    document.getElementById('pct-text').textContent = result.pct + '%';
+
+    // Ring animation
+    const circumference = 2 * Math.PI * 46;
+    const offset = circumference * (1 - result.pct / 100);
+    setTimeout(() => {
+      document.getElementById('ring-fill').style.strokeDashoffset = offset;
+    }, 100);
+
+    // Pass/Fail
+    const passed = result.pct >= 70;
+    const box = document.getElementById('pass-fail-box');
+    const icon = document.getElementById('pf-icon');
+    const status = document.getElementById('pf-status');
+    const sub = document.getElementById('pf-sub');
+
+    if (!passed) {
+      box.classList.add('fail');
+      icon.classList.replace('pass', 'fail');
+      icon.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>`;
+      status.classList.replace('pass','fail');
+      status.textContent = 'FAIL';
+      sub.textContent = 'BETTER LUCK NEXT TIME!';
+    }
+
+    // Summary
+    const list = document.getElementById('summary-list');
+    result.summary.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'summary-item';
+      const qShort = item.q.length > 30 ? item.q.slice(0, 30) + '...' : item.q;
+      div.innerHTML = `
+        <div class="s-icon ${item.isCorrect ? 'correct' : 'wrong'}">
+          ${item.isCorrect
+            ? `<svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1,6 5,10 11,2"/></svg>`
+            : `<svg viewBox="0 0 12 12" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>`
+          }
+        </div>
+        <div class="s-body">
+          <div class="s-q">Q${i+1} &nbsp; ${qShort}</div>
+          <div class="s-detail">
+            ${item.isCorrect
+              ? `Selected Answer &nbsp;<span>${item.selected}</span>`
+              : `Your Answer: <span>${item.selected}</span> &nbsp;·&nbsp; Correct Answer: <span>${item.correct}</span>`
+            }
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+
+    function retryQuiz() {
+      window.location.href = 'quiz.html';
+    }
+  </script>
+</body>
+</html>
